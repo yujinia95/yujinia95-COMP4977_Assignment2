@@ -103,8 +103,18 @@ app.MapControllers();
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.EnsureCreated();
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ApplicationDbContext>();
+
+    // Apply migrations
+    context.Database.Migrate();
+
+    // user manager type
+    var userMgr = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // Call seed method
+    IdentitySeedData.Initialize(context, userMgr).Wait();
 }
 
 app.Run();

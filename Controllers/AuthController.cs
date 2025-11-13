@@ -80,7 +80,9 @@ namespace IosAssignment2Backend.Controllers
                     Id = user.Id,
                     Email = user.Email,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    CreatedAt = user.CreatedAt,
+                    LastLoginDate = user.LastLoginDate
                 }
             });
         }
@@ -116,6 +118,9 @@ namespace IosAssignment2Backend.Controllers
                     Message = "Invalid email or password"
                 });
             }
+            // Update last login time
+            user.LastLoginDate = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
 
             var token = _jwtService.GenerateToken(user);
 
@@ -129,7 +134,9 @@ namespace IosAssignment2Backend.Controllers
                     Id = user.Id,
                     Email = user.Email,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    CreatedAt = user.CreatedAt,
+                    LastLoginDate = user.LastLoginDate
                 }
             });
         }
@@ -155,7 +162,9 @@ namespace IosAssignment2Backend.Controllers
                 Id = user.Id,
                 Email = user.Email ?? "",
                 FirstName = user.FirstName ?? "",
-                LastName = user.LastName ?? ""
+                LastName = user.LastName ?? "",
+                CreatedAt = user.CreatedAt,
+                LastLoginDate = user.LastLoginDate
             });
         }
 
