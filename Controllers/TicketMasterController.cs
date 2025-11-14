@@ -3,6 +3,7 @@ using IosAssignment2Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace IosAssignment2Backend.Controllers;
 
@@ -48,12 +49,12 @@ public class TicketMasterController : ControllerBase
             }
 
             var json = await response.Content.ReadAsStringAsync();
+            // Parse TicketMaster's JSON into a JsonDocument
+            using var jsonDoc = JsonDocument.Parse(json);
+            var rootElement = jsonDoc.RootElement.Clone();
 
-            return Ok(new
-            {
-                DmaId = dmaId,
-                RawJson = json
-            });
+            // RETURN real JSON (no escaping)
+            return Ok(rootElement);
         }
         catch (Exception ex)
         {
