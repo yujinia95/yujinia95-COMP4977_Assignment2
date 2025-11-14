@@ -13,6 +13,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Configure TicketMaster API settings
+builder.Services.Configure<TicketMasterApiSettings>(
+    builder.Configuration.GetSection("TicketMasterApi")
+);
+
+builder.Services.AddHttpClient("TicketMasterClient");
+
+
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

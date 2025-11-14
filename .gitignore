@@ -398,6 +398,9 @@ FodyWeavers.xsd
 .history/
 
 # Windows Installer files from build outputs
+
+# Ignore local global.json (environment/tooling config)
+global.json
 *.cab
 *.msi
 *.msix
