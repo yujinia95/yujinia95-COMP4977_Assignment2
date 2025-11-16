@@ -18,8 +18,17 @@ builder.Services.Configure<TicketMasterApiSettings>(
     builder.Configuration.GetSection("TicketMasterApi")
 );
 
-builder.Services.AddHttpClient("TicketMasterClient");
+// Use configured settings to set the HttpClient BaseAddress
+var ticketMasterSection = builder.Configuration.GetSection("TicketMasterApi");
+var ticketMasterBase = ticketMasterSection["BaseUrl"];
 
+builder.Services.AddHttpClient("TicketMasterClient", client =>
+{
+    if (!string.IsNullOrWhiteSpace(ticketMasterBase))
+    {
+        client.BaseAddress = new Uri(ticketMasterBase);
+    }
+});
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
