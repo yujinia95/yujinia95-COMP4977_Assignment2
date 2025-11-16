@@ -6,12 +6,32 @@ using System.Text;
 using IosAssignment2Backend.Data;
 using IosAssignment2Backend.Models;
 using IosAssignment2Backend.Services;
+using Microsoft.Extensions.AI;
+using Azure.AI.OpenAI;
+using Azure;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Configure OpenAPI/Swagger via Swashbuckle
+// Note: use Swashbuckle's AddSwaggerGen() above and UseSwagger()/UseSwaggerUI() below.
+
+// Add MCP client service
+var endpoint = builder.Configuration["AI:Endpoint"];
+var apiKey = builder.Configuration["AI:ApiKey"];
+var model = builder.Configuration["AI:ModelName"];
+
+builder.Services.AddChatClient(services =>
+  new ChatClientBuilder(
+    (
+      !string.IsNullOrEmpty(apiKey)
+        ? new AzureOpenAIClient(new Uri(endpoint!), new AzureKeyCredential(apiKey))
+        : new AzureOpenAIClient(new Uri(endpoint!), new DefaultAzureCredential())
+    ).GetChatClient(model).AsIChatClient()
+  )
+  .UseFunctionInvocation()
+  .Build());
 
 // Configure TicketMaster API settings
 builder.Services.Configure<TicketMasterApiSettings>(
@@ -44,12 +64,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Stores.MaxLengthForKeys = 128; // Key/ID length
 
     // Password settings
-    options.Password.RequireDigit = true; // at least one digit
-    options.Password.RequireLowercase = true; // at least one lowercase letter
-    options.Password.RequireNonAlphanumeric = true; // at least one special character required (examples: ! @ # $ % ^ & * ( ) - _ = + . , and also spaces)
-    options.Password.RequireUppercase = true; // at least one uppercase letter
-    options.Password.RequiredLength = 8; // minimum length
-    options.Password.RequiredUniqueChars = 1; // at least one unique character
+    options.Password.RequireDigit = true;                       // at least one digit
+    options.Password.RequireLowercase = true;                   // at least one lowercase letter
+    options.Password.RequireNonAlphanumeric = true;             // at least one special character required (examples: ! @ # $ % ^ & * ( ) - _ = + . , and also spaces)
+    options.Password.RequireUppercase = true;                   // at least one uppercase letter
+    options.Password.RequiredLength = 8;                        // minimum length
+    options.Password.RequiredUniqueChars = 1;                   // at least one unique character
     
     // Sign-in settings - require confirmed account for login
     options.SignIn.RequireConfirmedAccount = false; // Set to false to allow immediate login after registration
@@ -103,8 +123,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
-    app.MapOpenApi();
+    app.UseSwaggerUI(options => {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "IosAssignmentBackend");
+        options.RoutePrefix = "";
+    });
 }
 
 app.UseHttpsRedirection();
